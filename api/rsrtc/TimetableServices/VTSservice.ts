@@ -17,11 +17,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: req.body,
     });
 
+    console.log('-------RSRTC API Response:', response);
+    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const xmlText = await response.text();
+    console.log('RSRTC API Response XML TExt:', xmlText);
+    
     
     // Set appropriate headers
     res.setHeader('Content-Type', 'text/xml');

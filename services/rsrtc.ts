@@ -2,6 +2,7 @@
 import type { Bus, Location } from "../types";
 import { locations } from "../constants"; 
 import axios from "axios";
+import { log } from "console";
 
 const isDevelopment = process.env.NODE_ENV === 'development' || 
                      window.location.hostname === 'localhost' || 
@@ -85,6 +86,10 @@ const makeApiRequest = async (SOAP_ENVELOPE: string) => {
                 timeout: 10000,
             }
         );
+
+        console.log("Is development :", isDevelopment);
+        console.log("RSRTC API response :", response);
+        
         return response.data;
     } catch (error: any) {
         if (error.response) throw new Error(`HTTP error! status: ${error.response.status}`);
@@ -99,8 +104,13 @@ const isConnectionError = (xmlText: string): boolean => {
 
 export const getAvailableServices = async (fromCity: string, toCity: string): Promise<Bus[]> => {
     const currentDate = new Date();
+    console.log("currentDate:", currentDate);
+    
     const dateOfJourney = `${String(currentDate.getDate()).padStart(2,"0")}/${String(currentDate.getMonth()+1).padStart(2,"0")}/${currentDate.getFullYear()}`;
+    console.log("dateOfJourney:", dateOfJourney);
+    
     const depotCd = fromCity.toLowerCase().includes("jaipur") ? "JPR" : "JDR"; 
+    console.log("depotCd:", depotCd);
 
     const SOAP_ENVELOPE = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.rsrtc.trimax.com/">
         <soapenv:Header/>
@@ -119,12 +129,17 @@ export const getAvailableServices = async (fromCity: string, toCity: string): Pr
         </soapenv:Body>
     </soapenv:Envelope>`;
 
+    console.log("SOAP_ENVELOPE:", SOAP_ENVELOPE);
+    
+
     try {
         const maxAttempts = 3;
         let xmlText = '';
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             console.log(`API call attempt ${attempt}...`);
             xmlText = await makeApiRequest(SOAP_ENVELOPE);
+            console.log("Received XML response:", xmlText);
+            
             if (!isConnectionError(xmlText)) break;
             console.warn(`Connection error detected, retrying...`);
             await new Promise(resolve => setTimeout(resolve, attempt * 500)); // incremental delay
@@ -132,6 +147,8 @@ export const getAvailableServices = async (fromCity: string, toCity: string): Pr
 
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        console.log("Parsed XML Document:", xmlDoc);
+        
 
         const errorReason = xmlDoc.querySelector('errorReason');
         if (errorReason && errorReason.textContent) {
