@@ -71,6 +71,7 @@ const mapXmlServiceToBus = (serviceXml: Element): Bus => {
     };
 };
 
+//make api req
 const makeApiRequest = async (SOAP_ENVELOPE: string) => {
     try {
         const response = await axios.post(
