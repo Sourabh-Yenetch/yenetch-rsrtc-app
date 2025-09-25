@@ -1,7 +1,13 @@
 {
   "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node"
+    "api/*/.php": {
+      "runtime": "now-php@1.0.0"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
 }
